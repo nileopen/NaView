@@ -54,7 +54,7 @@ public class NaProgressBar extends View {
     private int mMax;
     private int mProgress;
     private int mInterval;
-//    public float mIntervalAngel;
+    //    public float mIntervalAngel;
     public float mStopIntervalAngel;
     ArrayList<Integer> mStopList = new ArrayList();
 
@@ -77,7 +77,7 @@ public class NaProgressBar extends View {
                             mHandler.sendEmptyMessageDelayed(MSG_START, TIME_INTERVAL);
                         } else {
                             mStopList.add(mProgress);
-                            if (mListener != null){
+                            if (mListener != null) {
                                 mListener.onStop(mProgress / 1000);
                             }
                             mStatus = STATUS_INIT;
@@ -186,7 +186,7 @@ public class NaProgressBar extends View {
             int progress = mProgress;
             float maxAngel = 360.0f - stopAngel;
             int pa = 0;
-            for (int i = 0; i < mStopList.size(); ++i){
+            for (int i = 0; i < mStopList.size(); ++i) {
                 int p = mStopList.get(i);
                 pa = p - pa;
                 angel = pa * maxAngel / max;
@@ -204,7 +204,7 @@ public class NaProgressBar extends View {
             }
 
             pa = progress - pa;
-            if (pa > 0){
+            if (pa > 0) {
                 angel = pa * maxAngel / max;
                 canvas.drawArc(bgRect, mStartAngel + astart, angel, false, mArcPaint);
             }
@@ -253,19 +253,19 @@ public class NaProgressBar extends View {
         return mStatus == STATUS_RUNNING;
     }
 
-    public void setMax(int max){
+    public void setMax(int max) {
         this.mMax = max * 1000;
         this.mInterval = (int) TIME_INTERVAL;
     }
 
-    private boolean setProgressAngel(){
-        this.mProgress +=  mInterval;
-        if (mListener != null){
+    private boolean setProgressAngel() {
+        this.mProgress += mInterval;
+        if (mListener != null) {
             mListener.onProgress(mProgress * 1.0f / mMax);
         }
-        if (this.mProgress >= this.mMax){
+        if (this.mProgress >= this.mMax) {
             this.mProgress = this.mMax;
-            if (mListener != null){
+            if (mListener != null) {
                 mListener.onFinish();
             }
             return false;
@@ -278,7 +278,7 @@ public class NaProgressBar extends View {
         if (mStatus == STATUS_INIT) {
             mStatus = STATUS_RUNNING;
             mHandler.sendEmptyMessageDelayed(MSG_START, TIME_INTERVAL);
-        } else if (mStatus == STATUS_REALESE){
+        } else if (mStatus == STATUS_REALESE) {
             mStatus = STATUS_RUNNING;
             mHandler.sendEmptyMessageDelayed(MSG_START, TIME_INTERVAL);
         }
@@ -303,22 +303,29 @@ public class NaProgressBar extends View {
     }
 
     public void cancelBack() {
-        if (!(mStatus == STATUS_RUNNING)){
-            int size = mStopList.size() - 1;
-            if (size >= 0){
-                mStopList.remove(size);
-                size = mStopList.size() - 1;
-                if (size >= 0){
-                    mProgress = mStopList.get(size);
+        if (!(mStatus == STATUS_RUNNING)) {
+            int index = mStopList.size() - 1;
+            if (index >= 0) {
+                int p = mStopList.get(index);
+                if (mProgress > p) {
+                    mProgress = p;
                 } else {
-                    mProgress = 0;
-                }
+                    mStopList.remove(index);
+                    index = mStopList.size() - 1;
+                    if (index >= 0) {
+                        mProgress = mStopList.get(index);
+                    } else {
+                        mProgress = 0;
+                    }
 
-                if (mProgress < 0){
-                    mProgress = 0;
+                    if (mProgress < 0) {
+                        mProgress = 0;
+                    }
                 }
-                postInvalidate();
+            } else {
+                mProgress = 0;
             }
+            postInvalidate();
         }
     }
 
@@ -326,9 +333,11 @@ public class NaProgressBar extends View {
         this.mListener = mListener;
     }
 
-    public interface onProgressBarListener{
+    public interface onProgressBarListener {
         void onFinish();
+
         void onStop(int progress);
+
         void onProgress(float progress);
     }
 }
