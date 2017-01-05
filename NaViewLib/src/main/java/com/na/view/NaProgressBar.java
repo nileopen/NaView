@@ -19,8 +19,7 @@ import java.util.ArrayList;
  * @DATE: 16/11/17
  */
 public class NaProgressBar extends View {
-
-//    private static final String TAG = "NaProgressBar";
+    private static final String TAG = "NaProgressBar";
 
     //中心圆画笔
     private Paint mCirclePaint;
@@ -43,24 +42,29 @@ public class NaProgressBar extends View {
     private float mArcInternal;
 
     //圆弧长度 360：封闭弧
-    private float mCurrentAngel;
+//    private float mCurrentAngel;
     //圆弧起始位置 270：顶部 180：左边 90：底部 0：右边
     private float mStartAngel;
 
-    private float mMax;
-    private final long TIME_INTERVAL = 100L;
+
+    private final long TIME_INTERVAL = 50L;
     private final int MSG_START = 100;
     private final int MSG_STOP = 200;
 
-    public float mIntervalAngel;
+    private int mMax;
+    private int mProgress;
+    private int mInterval;
+//    public float mIntervalAngel;
     public float mStopIntervalAngel;
-    ArrayList<Float> mStopList = new ArrayList();
+    ArrayList<Integer> mStopList = new ArrayList();
 
     private final byte STATUS_INIT = 1;
     private final byte STATUS_RUNNING = 2;
     private final byte STATUS_STOPING = 4;
     private final byte STATUS_REALESE = 8;
     private byte mStatus = STATUS_INIT;
+
+    private onProgressBarListener mListener;
 
     private Handler mHandler = new Handler() {
         @Override
@@ -72,7 +76,10 @@ public class NaProgressBar extends View {
                         if (mStatus == STATUS_RUNNING) {
                             mHandler.sendEmptyMessageDelayed(MSG_START, TIME_INTERVAL);
                         } else {
-                            mStopList.add(mCurrentAngel);
+                            mStopList.add(mProgress);
+                            if (mListener != null){
+                                mListener.onStop(mProgress / 1000);
+                            }
                             mStatus = STATUS_INIT;
                         }
                     } else {
@@ -113,8 +120,8 @@ public class NaProgressBar extends View {
     }
 
     private void initView() {
-
-        mCurrentAngel = 0.0f;
+        mProgress = 0;
+        mStopIntervalAngel = 5.0f;
         mStartAngel = 270.0f;
         mArcWidth = dipToPx(5.0f);
         mArcInternal = dipToPx(2.5f);
@@ -124,6 +131,7 @@ public class NaProgressBar extends View {
 
         //中心圆
         mCirclePaint = new Paint();
+        mCirclePaint.setAntiAlias(true);
         mCirclePaint.setColor(mCircleBgColor);
 
         //整个弧形
@@ -138,7 +146,7 @@ public class NaProgressBar extends View {
         mArcPaint = new Paint();
         mArcPaint.setAntiAlias(true);
         mArcPaint.setStyle(Paint.Style.STROKE);
-        mArcPaint.setStrokeCap(Paint.Cap.ROUND);
+        mArcPaint.setStrokeCap(Paint.Cap.BUTT);
         mArcPaint.setStrokeWidth(mArcWidth);
         mArcPaint.setColor(mArcColor);
     }
@@ -169,26 +177,28 @@ public class NaProgressBar extends View {
             bgRect.right = centerX + arcRadius;
             canvas.drawArc(bgRect, mStartAngel, 360.0f, false, mArcBgPaint);
 
-            if (mCurrentAngel > 0.0f) {
-                float astart = 0.0f;
-                float angel = 0.0f;
-                for (int i = 0; i < mStopList.size(); ++i){
-                    float p = mStopList.get(i);
-                    if (p == mCurrentAngel) {
-                        angel = p - astart;
-                    } else {
-                        angel = p - astart - mStopIntervalAngel;
-                    }
-                    if (angel > 0.0f) {
-                        canvas.drawArc(bgRect, mStartAngel + astart, angel, false, mArcPaint);
-                    }
-                    astart = p;
-                }
-                angel = mCurrentAngel - astart;
-                if (angel > 0.0f) {
-                    canvas.drawArc(bgRect, mStartAngel + astart, mCurrentAngel - astart, false, mArcPaint);
-                }
+            float stopAngel = mStopIntervalAngel;
+            float astart = 0.0f;
+            float angel = 0.0f;
+            int max = mMax;
+            int progress = mProgress;
+            float maxAngel = 360.0f - ((mStopList.size() - 1) * 5.0f);
+            int pa = 0;
+            for (int i = 0; i < mStopList.size(); ++i){
+                int p = mStopList.get(i);
+                pa = p - pa;
+                angel = pa * maxAngel / max;
+                canvas.drawArc(bgRect, mStartAngel + astart, angel, false, mArcPaint);
+                astart += angel + stopAngel;
+                pa = p;
             }
+
+            pa = progress - pa;
+            if (pa > 0){
+                angel = pa * maxAngel / max;
+                canvas.drawArc(bgRect, mStartAngel + astart, angel, false, mArcPaint);
+            }
+
             float circleRadius = radius - mArcInternal - mArcWidth;
 
             if (circleRadius <= 0.0f) {
@@ -224,7 +234,7 @@ public class NaProgressBar extends View {
         this.mArcInternal = dipToPx(internal);
     }
 
-    //an angel max is 360  this interal default is 360 / max
+    //default 5.0f  total is 360.0f
     public void setStopIntervalAngel(float interval) {
         this.mStopIntervalAngel = interval;
     }
@@ -233,17 +243,21 @@ public class NaProgressBar extends View {
         return mStatus == STATUS_RUNNING;
     }
 
-    public void setMax(float max) {
-        this.mMax = max;
-        mIntervalAngel = 360.0f / (max * (1000.0f / TIME_INTERVAL));
-        mStopIntervalAngel = 360.0f / max;
+    public void setMax(int max){
+        this.mMax = max * 1000;
+        this.mInterval = 50;
     }
 
     private boolean setProgressAngel(){
-        this.mCurrentAngel += mIntervalAngel;
-//        Log.e("NaProgressBar", "setProgressAngel mCurrentAngel=" + mCurrentAngel);
-        if (this.mCurrentAngel > 360.0f){
-            this.mCurrentAngel = 360.0f;
+        this.mProgress +=  mInterval;
+        if (mListener != null){
+            mListener.onProgress(mProgress * 1.0f / mMax);
+        }
+        if (this.mProgress >= this.mMax){
+            this.mProgress = this.mMax;
+            if (mListener != null){
+                mListener.onFinish();
+            }
             return false;
         }
         postInvalidate();
@@ -264,7 +278,7 @@ public class NaProgressBar extends View {
     public void stop() {
         if (mStatus == STATUS_RUNNING) {
             if (!mHandler.hasMessages(MSG_STOP)) {
-                mHandler.sendEmptyMessageDelayed(MSG_STOP, 2000l);
+                mHandler.sendEmptyMessage(MSG_STOP);
             }
         }
     }
@@ -274,7 +288,30 @@ public class NaProgressBar extends View {
         mStopList.clear();
         mHandler.removeMessages(MSG_START);
         mHandler.removeMessages(MSG_STOP);
-        mCurrentAngel = 0.0f;
+        mProgress = 0;
         postInvalidate();
+    }
+
+    public void cancelBack() {
+        if (!(mStatus == STATUS_RUNNING)){
+            int size = mStopList.size() - 1;
+            if (size >= 0 && size < mStopList.size()){
+                mProgress = mProgress - mStopList.remove(size);
+                if (mProgress < 0){
+                    mProgress = 0;
+                }
+                postInvalidate();
+            }
+        }
+    }
+
+    public void setOnProgressBarListener(onProgressBarListener mListener) {
+        this.mListener = mListener;
+    }
+
+    public interface onProgressBarListener{
+        void onFinish();
+        void onStop(int progress);
+        void onProgress(float progress);
     }
 }

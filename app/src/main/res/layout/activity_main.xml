@@ -28,4 +28,13 @@
         android:layout_centerHorizontal="true"
         android:layout_marginTop="30dp"
         android:text="reset" />
+
+    <Button
+        android:id="@+id/btRev"
+        android:layout_width="80dp"
+        android:layout_height="40dp"
+        android:layout_below="@+id/btStart"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:text="取消" />
 </RelativeLayout>
