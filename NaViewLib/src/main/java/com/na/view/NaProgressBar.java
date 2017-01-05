@@ -306,8 +306,15 @@ public class NaProgressBar extends View {
     public void cancelBack() {
         if (!(mStatus == STATUS_RUNNING)){
             int size = mStopList.size() - 1;
-            if (size >= 0 && size < mStopList.size()){
-                mProgress = mProgress - mStopList.remove(size);
+            if (size >= 0){
+                mStopList.remove(size);
+                size = mStopList.size() - 1;
+                if (size >= 0){
+                    mProgress = mStopList.get(size);
+                } else {
+                    mProgress = 0;
+                }
+
                 if (mProgress < 0){
                     mProgress = 0;
                 }
