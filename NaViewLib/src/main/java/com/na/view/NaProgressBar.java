@@ -279,7 +279,6 @@ public class NaProgressBar extends View {
             mStatus = STATUS_RUNNING;
             mHandler.sendEmptyMessageDelayed(MSG_START, TIME_INTERVAL);
         } else if (mStatus == STATUS_REALESE){
-            release();
             mStatus = STATUS_RUNNING;
             mHandler.sendEmptyMessageDelayed(MSG_START, TIME_INTERVAL);
         }
