@@ -88,7 +88,9 @@ public class NaProgressBar extends View {
                     break;
                 }
                 case MSG_STOP: {
-                    mStatus = STATUS_STOPING;
+                    if (mStatus == STATUS_RUNNING) {
+                        mStatus = STATUS_STOPING;
+                    }
                     break;
                 }
                 default: {
@@ -121,7 +123,7 @@ public class NaProgressBar extends View {
 
     private void initView() {
         mProgress = 0;
-        mStopIntervalAngel = 5.0f;
+        mStopIntervalAngel = 3.0f;
         mStartAngel = 270.0f;
         mArcWidth = dipToPx(5.0f);
         mArcInternal = dipToPx(2.5f);
@@ -182,14 +184,22 @@ public class NaProgressBar extends View {
             float angel = 0.0f;
             int max = mMax;
             int progress = mProgress;
-            float maxAngel = 360.0f - ((mStopList.size() - 1) * 5.0f);
+            float maxAngel = 360.0f - stopAngel;
             int pa = 0;
             for (int i = 0; i < mStopList.size(); ++i){
                 int p = mStopList.get(i);
                 pa = p - pa;
                 angel = pa * maxAngel / max;
-                canvas.drawArc(bgRect, mStartAngel + astart, angel, false, mArcPaint);
-                astart += angel + stopAngel;
+                if (p == progress) {
+                    canvas.drawArc(bgRect, mStartAngel + astart, angel, false, mArcPaint);
+                } else {
+                    if (angel - stopAngel > 0.5f) {
+                        canvas.drawArc(bgRect, mStartAngel + astart, angel - stopAngel, false, mArcPaint);
+                    } else {
+                        canvas.drawArc(bgRect, mStartAngel + astart, angel, false, mArcPaint);
+                    }
+                }
+                astart += angel;
                 pa = p;
             }
 
@@ -234,7 +244,7 @@ public class NaProgressBar extends View {
         this.mArcInternal = dipToPx(internal);
     }
 
-    //default 5.0f  total is 360.0f
+    //default 3.0f  total is 360.0f
     public void setStopIntervalAngel(float interval) {
         this.mStopIntervalAngel = interval;
     }
@@ -245,7 +255,7 @@ public class NaProgressBar extends View {
 
     public void setMax(int max){
         this.mMax = max * 1000;
-        this.mInterval = 50;
+        this.mInterval = (int) TIME_INTERVAL;
     }
 
     private boolean setProgressAngel(){
@@ -278,6 +288,7 @@ public class NaProgressBar extends View {
     public void stop() {
         if (mStatus == STATUS_RUNNING) {
             if (!mHandler.hasMessages(MSG_STOP)) {
+//                mHandler.sendEmptyMessageDelayed(MSG_STOP, 500l);
                 mHandler.sendEmptyMessage(MSG_STOP);
             }
         }
