@@ -9,32 +9,8 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.na.naview.demo.MainActivity">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Hello World!" />
-
-    <com.na.view.NaProgressBar
-        android:id="@+id/progressbar"
-        android:layout_width="75dp"
-        android:layout_height="75dp"
-        android:layout_centerInParent="true" />
-
-    <Button
-        android:id="@+id/btStart"
-        android:layout_width="80dp"
-        android:layout_height="40dp"
-        android:layout_below="@+id/progressbar"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="30dp"
-        android:text="reset" />
-
-    <Button
-        android:id="@+id/btRev"
-        android:layout_width="80dp"
-        android:layout_height="40dp"
-        android:layout_below="@+id/btStart"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="20dp"
-        android:text="取消" />
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rvList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"/>
 </RelativeLayout>
