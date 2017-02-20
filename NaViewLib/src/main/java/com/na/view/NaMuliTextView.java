@@ -63,19 +63,20 @@ public class NaMuliTextView extends TextView {
     }
 
     private void initAttr(Context context, AttributeSet attrs, int defStyleAttr) {
+        setInitialSizeMultiple(3);
         TypedArray a = context.getTheme().obtainStyledAttributes(attrs, R.styleable.NaMuliTextView, defStyleAttr, 0);
+
         if (a != null) {
             mTextColor = a.getColor(R.styleable.NaMuliTextView_textColor, Color.BLACK);
             mTextSize = a.getDimensionPixelSize(R.styleable.NaMuliTextView_textSize, 16);
             mLineSpacingMultiplier = a.getFloat(R.styleable.NaMuliTextView_lineSpacingMultiplier, 1.0f);
+            setInitialSizeMultiple(a.getInteger(R.styleable.NaMuliTextView_initialSizeMultiple, 3));
             a.recycle();
         }
 
-//        mPaint = new TextPaint();
         mPaint = super.getPaint();
         mPaint.setTextSize(mTextSize);
         mPaint.setColor(mTextColor);
-        setInitialSizeMultiple(3);
     }
 
     public void setText(String text) {
@@ -103,7 +104,11 @@ public class NaMuliTextView extends TextView {
             vWidth = widthSize;
         } else {
             if (mText != null && mText.length() > 0) {
-                mPaint.setTextSize(mTextSize * mInitialSizeMultiple * mLineSpacingMultiplier + mTextSize);
+                if (mInitialSizeMultiple > 1) {
+                    mPaint.setTextSize(mTextSize * mInitialSizeMultiple * mLineSpacingMultiplier + mTextSize);
+                } else  {
+                    mPaint.setTextSize(mTextSize * mInitialSizeMultiple * mLineSpacingMultiplier);
+                }
                 int width = widthSize;
                 String initial = mText.substring(0, 1);
                 StaticLayout initialLayout = new StaticLayout(initial,
@@ -166,14 +171,22 @@ public class NaMuliTextView extends TextView {
     protected void onDraw(Canvas canvas) {
 //        super.onDraw(canvas);
         if (mText != null && mText.length() > 0) {
-            mPaint.setTextSize(mTextSize * mInitialSizeMultiple * mLineSpacingMultiplier + mTextSize);
+            if (mInitialSizeMultiple > 1) {
+                mPaint.setTextSize(mTextSize * mInitialSizeMultiple * mLineSpacingMultiplier + mTextSize);
+            } else  {
+                mPaint.setTextSize(mTextSize * mInitialSizeMultiple * mLineSpacingMultiplier);
+            }
             int width = getWidth();
             String initial = mText.substring(0, 1);
             StaticLayout initialLayout = new StaticLayout(initial,
                     mPaint, width, Layout.Alignment.ALIGN_NORMAL, mLineSpacingMultiplier, 0.0f, false);
             int intaialWidth = (int) mPaint.measureText(initial) + 20;
             canvas.save();
-            canvas.translate(0, -mTextSize);
+            if (mInitialSizeMultiple > 1) {
+                canvas.translate(0, -mTextSize);
+            } else  {
+                canvas.translate(0, 0);
+            }
             initialLayout.draw(canvas);
             canvas.restore();
             canvas.save();

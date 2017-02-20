@@ -16,7 +16,7 @@ public class TextViewActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_text_view);
         ntvContent = (NaMuliTextView) findViewById(R.id.ntvContent);
-        ntvContent.setInitialSizeMultiple(2);
+//        ntvContent.setInitialSizeMultiple(2);
         ntvContent.setText("A sales management or business development position where my strategic " +
                 "and consultative selling, cross-cultural relationship building, team facilitation, " +
                 "business management, organizational insight, " +
@@ -26,7 +26,7 @@ public class TextViewActivity extends AppCompatActivity {
                 "responsibility offered those with demonstrated potential.");
 
         ntvContent1 = (NaMuliTextView) findViewById(R.id.ntvContent1);
-        ntvContent1.setInitialSizeMultiple(3);
+//        ntvContent1.setInitialSizeMultiple(3);
         ntvContent1.setText("A sales management or business development position where my strategic " +
 //                "and consultative selling, cross-cultural relationship building, team facilitation, " +
 //                "business management, organizational insight, " +

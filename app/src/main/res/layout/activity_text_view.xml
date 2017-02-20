@@ -24,5 +24,6 @@
         android:layout_height="wrap_content"
         naview:textColor="@color/black"
         naview:lineSpacingMultiplier="1.5"
+        naview:initialSizeMultiple="2"
         naview:textSize="@dimen/font16"/>
 </RelativeLayout>
