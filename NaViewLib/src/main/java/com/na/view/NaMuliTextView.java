@@ -11,13 +11,14 @@ import android.text.Layout;
 import android.text.StaticLayout;
 import android.text.TextPaint;
 import android.util.AttributeSet;
-import android.view.View;
+import android.util.Log;
+import android.widget.TextView;
 
 /**
  * @actor:taotao
  * @DATE: 17/2/4
  */
-public class NaMuliTextView extends View {
+public class NaMuliTextView extends TextView {
     /**
      * 需要绘制的文字
      */
@@ -70,10 +71,11 @@ public class NaMuliTextView extends View {
             a.recycle();
         }
 
-        mPaint = new TextPaint();
+//        mPaint = new TextPaint();
+        mPaint = super.getPaint();
         mPaint.setTextSize(mTextSize);
         mPaint.setColor(mTextColor);
-        setInitialSizeMultiple(2);
+        setInitialSizeMultiple(3);
     }
 
     public void setText(String text) {
@@ -100,27 +102,25 @@ public class NaMuliTextView extends View {
             vHeight = heightSize;
             vWidth = widthSize;
         } else {
-            if (mText != null) {
-                mPaint.setTextSize(mTextSize * mInitialSizeMultiple * mLineSpacingMultiplier);
+            if (mText != null && mText.length() > 0) {
+                mPaint.setTextSize(mTextSize * mInitialSizeMultiple * mLineSpacingMultiplier + mTextSize);
                 int width = widthSize;
-                StaticLayout initialLayout = new StaticLayout(mText.substring(0, 1),
+                String initial = mText.substring(0, 1);
+                StaticLayout initialLayout = new StaticLayout(initial,
                         mPaint, width, Layout.Alignment.ALIGN_NORMAL, mLineSpacingMultiplier, 0.0f, false);
                 vHeight = initialLayout.getHeight();
-                int intaialWidth = vHeight / 2;
+                int intaialWidth = (int) mPaint.measureText(initial) + 20;
+
                 vWidth = intaialWidth;
 
                 width = width - intaialWidth;
                 if (mText.length() > 1) {
+                    vWidth += width;
+
                     mPaint.setTextSize(mTextSize);
                     StaticLayout layout = new StaticLayout(mText.substring(1),
                             mPaint, width, Layout.Alignment.ALIGN_NORMAL, mLineSpacingMultiplier, 0.0f, false);
                     int lineCount = layout.getLineCount();
-                    if (lineCount > 1){
-                        vWidth += width;
-                    } else {
-                        vWidth += layout.getHeight();
-                    }
-
                     if (lineCount > mInitialSizeMultiple) {
                         int end = layout.getLineStart(mInitialSizeMultiple);
                         StaticLayout smallLayout = new StaticLayout(mText.substring(1, end),
@@ -128,7 +128,14 @@ public class NaMuliTextView extends View {
 
                         StaticLayout bigLayout = new StaticLayout(mText.substring(end),
                                 mPaint, width + intaialWidth, Layout.Alignment.ALIGN_NORMAL, mLineSpacingMultiplier, 0.0f, false);
-                        int h = smallLayout.getHeight() + bigLayout.getHeight();
+                        int y = layout.getLineTop(mInitialSizeMultiple);
+                        int count = smallLayout.getLineCount() + bigLayout.getLineCount();
+                        int h2 = y * count / mInitialSizeMultiple;
+                        int h1 = y + bigLayout.getHeight();
+                        int h = h1;
+                        if (h2 > h1){
+                            h = h2;
+                        }
                         if (h > vHeight){
                             vHeight = h;
                         }
@@ -157,14 +164,18 @@ public class NaMuliTextView extends View {
 
     @Override
     protected void onDraw(Canvas canvas) {
-        super.onDraw(canvas);
-        if (mText != null) {
-            mPaint.setTextSize(mTextSize * mInitialSizeMultiple * mLineSpacingMultiplier);
+//        super.onDraw(canvas);
+        if (mText != null && mText.length() > 0) {
+            mPaint.setTextSize(mTextSize * mInitialSizeMultiple * mLineSpacingMultiplier + mTextSize);
             int width = getWidth();
-            StaticLayout initialLayout = new StaticLayout(mText.substring(0, 1),
+            String initial = mText.substring(0, 1);
+            StaticLayout initialLayout = new StaticLayout(initial,
                     mPaint, width, Layout.Alignment.ALIGN_NORMAL, mLineSpacingMultiplier, 0.0f, false);
-            int intaialWidth = initialLayout.getHeight() / 2;
+            int intaialWidth = (int) mPaint.measureText(initial) + 20;
+            canvas.save();
+            canvas.translate(0, -mTextSize);
             initialLayout.draw(canvas);
+            canvas.restore();
             canvas.save();
             width = width - intaialWidth;
             if (mText.length() > 1) {
@@ -182,7 +193,8 @@ public class NaMuliTextView extends View {
                     StaticLayout bigLayout = new StaticLayout(mText.substring(end),
                             mPaint, width + intaialWidth, Layout.Alignment.ALIGN_NORMAL, mLineSpacingMultiplier, 0.0f, false);
                     canvas.restore();
-                    canvas.translate(0, smallLayout.getHeight());
+                    float y = layout.getLineTop(mInitialSizeMultiple);
+                    canvas.translate(0, y);
                     bigLayout.draw(canvas);
                 } else {
                     canvas.translate(intaialWidth, 0);
